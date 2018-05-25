@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>User Commnets</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Josefin+Sans|Open+Sans|Pacifico|Source+Code+Pro');
+
+		@import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+		body {
+			font-family: 'Open Sans', sans-serif;
+		}
+		#allcomments{
+			width: 90%;
+			margin: len 0 4em 1em;
+			padding: 1%;
+			border: solid 1px gray;
+			border-radius: 3px;
+			box-shadow: 2px 2px 2px silver;
+		}
+		ul#pastcomments{
+			list-style-type: none; 
+		}
+		ul#pastcomments li:before{
+			font-family: FontAwesome;
+			content: "\f086";
+			font-size: 24pt;
+			color: gray;
+			margin-left: -42px;
+			padding-right: 10px;
+			position: relative;
+			top: 8px;
+		}
+		ul#pastcomments li{
+			margin: 0 0 2em 0;
+			padding: 10px;
+		}
+
+		ul#pastcomments li span{
+			font-size: 80%;
+			color: gray;
+			font-style: italic;
+		}
+
+		form#newcomment textarea{
+			height:72px; 
+		}
+		form#newcomment label{
+			display: inline-block;
+			margin: 1em 0 0 0;
+		}
+		form#newcomment textarea,form#newcomment input[type="text"]{
+			margin-top: 0;
+		}
+
+	</style>
+</head>
+<body>
+	<div id = "allcomments">
+		<h3>Comments</h3>
+
+		<ul id = "pastcomments"></ul>
+		<form id = "newcomment">
+			<label for="tbName">First Name or Initials</label>
+			<br>
+			<input id  = "tbName" type="text" maxlength="20" required="1">
+			<br>
+			<label for="txComment">Your Commnet/ Question</label>
+			<br>
+			<textarea id="txComment" maxlength="4096" required="1" style="width: 96%"></textarea>
+			<br>
+			<input type="submit" id  ="btnSubmitComment" value="Submit Comment">
+		</form>
+	</div>
+	<!-- Firebase App is always required and must be first -->
+<script src="https://www.gstatic.com/firebasejs/5.0.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.0.3/firebase-database.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyBszuPciHn5PI6MYyZGlooPflJBWN5DEG0",
+    authDomain: "commentsproject-26b4e.firebaseapp.com",
+    databaseURL: "https://commentsproject-26b4e.firebaseio.com",
+    projectId: "commentsproject-26b4e",
+    storageBucket: "commentsproject-26b4e.appspot.com",
+    messagingSenderId: "1065991519936"
+  };
+  firebase.initializeApp(config);
+  const rootRef=firebase.database().ref();
+  const commentsRef=rootRef.child('commnets');
+  document.getElementById('btnSubmitComment').addEventListener('click',function(){
+  	var newcommnet = document.getElementById('txComment').value.replace(/\n/g,"<br>");
+  	var newPostRef = commentsRef.push();
+  	newPostRef.set({
+  		name:document.getElementById('tbName').value.trim(),
+  		comment: newcommnet.trim(),
+  		frompage: location.pathname,
+  		when: firebase.database.ServerValue.TIMESTAMP
+  	});
+  });
+
+function showpastcomments(){
+	var showat = document.getElementById('pastcomments');
+	// get commnets whose frompage equals this paegs pathname.
+	var commentsRef=firebase.database().ref('commnets/').orderByChild('frompage').equalTo(location.pathname);
+	 commentsRef.once('value',function(snapshot){
+			snapshot.forEach(function(itemSnapshot){
+				//get the object for one snapshot
+				var itemData = itemSnapshot.val();
+				var comment = itemData.comment;
+				var name = itemData.name;
+				var when = new Date(itemData.when).toLocaleDateString("en-us");
+				showat.innerHTML += "<li>"+comment +"<span> -- "+name +" (" + when + ")</span></li>";
+			})
+	})
+}
+
+showpastcomments()
+</script>
+</body>
+</html>
